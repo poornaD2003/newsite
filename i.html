@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Valentine 💖</title>
+
+<style>
+body{
+  margin:0;
+  height:100vh;
+  overflow:hidden;
+  font-family:Arial, sans-serif;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(270deg,#ff4e8a,#7f36ff,#ff9a9e);
+  background-size:600% 600%;
+  animation:bgMove 10s infinite;
+  color:white;
+}
+
+@keyframes bgMove{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+
+.page{text-align:center;}
+
+button{
+  padding:14px 28px;
+  font-size:18px;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+  margin:10px;
+  transition:0.3s;
+}
+
+.yes{background:#ff2e63;color:white;}
+.no{background:#333;color:white;}
+
+#page2{display:none;}
+
+.heart{
+  position:absolute;
+  color:red;
+  font-size:22px;
+  animation:float 1s linear forwards;
+  pointer-events:none;
+}
+
+@keyframes float{
+  0%{opacity:1;transform:translateY(0) scale(1);}
+  100%{opacity:0;transform:translateY(-40px) scale(1.8);}
+}
+
+/* PHOTO POPUP */
+#photoBox{
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  display:none;
+  background:white;
+  padding:15px;
+  border-radius:20px;
+  box-shadow:0 0 20px rgba(0,0,0,0.5);
+  text-align:center;
+  color:black;
+}
+
+#photoBox img{
+  width:260px;
+  border-radius:15px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- PAGE 1 -->
+<div id="page1" class="page">
+  <h1>Will You Be My Valentine? 💕</h1>
+  <button id="yes1" class="yes">YES 💖</button>
+  <button id="no1" class="no">NO 😜</button>
+</div>
+
+<!-- PAGE 2 -->
+<div id="page2" class="page">
+  <h1>How Much Do You Love Me? ❤️</h1>
+  <button id="yes2" class="yes">SO MUCH 💞</button>
+  <button id="no2" class="no"> Little😅</button>
+</div>
+
+<!-- PHOTO POPUP -->
+<div id="photoBox">
+  <img src="cop.jpg" alt="Our Love">
+  <p>I Love You Mge Mnike 💗</p>
+</div>
+
+<script>
+/* PAGE SWITCH */
+const page1=document.getElementById("page1");
+const page2=document.getElementById("page2");
+document.getElementById("yes1").onclick=()=>{
+  page1.style.display="none";
+  page2.style.display="block";
+};
+
+/* PAGE 1 NO BUTTON BEHAVIOR */
+const no1=document.getElementById("no1");
+const yes1=document.getElementById("yes1");
+let scale=1;
+const msgs=[
+  "Are you sure? 😢",
+  "Think again 💕",
+  "Please say YES 🥺",
+  "You know you want to 😘",
+  "Say YES please ❤️"
+];
+
+no1.onclick=()=>{
+  scale+=0.2;
+  yes1.style.transform=`scale(${scale})`;
+  no1.innerText=msgs[Math.floor(Math.random()*msgs.length)];
+};
+
+/* PAGE 2 NO BUTTON RUN */
+const no2=document.getElementById("no2");
+no2.addEventListener("mouseover",()=>{
+  no2.style.position="absolute";
+  const x=Math.random()*(window.innerWidth-no2.offsetWidth);
+  const y=Math.random()*(window.innerHeight-no2.offsetHeight);
+  no2.style.left=x+"px";
+  no2.style.top=y+"px";
+});
+
+/* PAGE 2 YES SHOW PHOTO */
+const yes2=document.getElementById("yes2");
+const photoBox=document.getElementById("photoBox");
+
+yes2.onclick=()=>{
+  heartExplosion();
+  photoBox.style.display="block";
+};
+// Floating hearts on mouse move
+document.addEventListener("mousemove", function(e) {
+    const heart = document.createElement("div");
+    heart.className = "heart";
+    heart.innerHTML = "❤"; // You can also use 💕 for variation
+
+    // Position the heart at cursor
+    heart.style.left = e.clientX + "px";
+    heart.style.top = e.clientY + "px";
+
+    // Random size for more dynamic effect
+    const size = Math.random() * 10 + 15; // 15px to 25px
+    heart.style.fontSize = size + "px";
+
+    // Append to body
+    document.body.appendChild(heart);
+
+    // Remove heart after animation (1s)
+    setTimeout(() => heart.remove(), 1000);
+});
+
+/* HEART EXPLOSION */
+function heartExplosion(){
+  for(let i=0;i<70;i++){
+    const heart=document.createElement("div");
+    heart.className="heart";
+    heart.innerHTML="❤";
+    heart.style.left=Math.random()*window.innerWidth+"px";
+    heart.style.top=Math.random()*window.innerHeight+"px";
+    document.body.appendChild(heart);
+    setTimeout(()=>heart.remove(),1000);
+  }
+}
+</script>
+
+</body>
+</html>
