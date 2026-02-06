@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Valentine 💖</title>
-
 <style>
 body{
   margin:0;
@@ -22,15 +21,12 @@ body{
   flex-direction:column;
   padding:10px;
 }
-
 @keyframes bgMove{
   0%{background-position:0% 50%;}
   50%{background-position:100% 50%;}
   100%{background-position:0% 50%;}
 }
-
 .page{width:100%; max-width:500px; margin:auto;}
-
 button{
   padding:12px 24px;
   font-size:16px;
@@ -41,12 +37,9 @@ button{
   transition:0.3s;
   min-width:120px;
 }
-
 .yes{background:#ff2e63;color:white;}
 .no{background:#333;color:white;}
-
 #page2{display:none;}
-
 .heart{
   position:absolute;
   color:red;
@@ -54,34 +47,75 @@ button{
   animation:float 1s linear forwards;
   pointer-events:none;
 }
-
+/* HEART FLOAT */
 @keyframes float{
   0%{opacity:1;transform:translateY(0) scale(1);}
   100%{opacity:0;transform:translateY(-40px) scale(1.8);}
 }
-
 /* PHOTO POPUP */
 #photoBox{
   position:fixed;
   top:50%;
   left:50%;
-  transform:translate(-50%,-50%);
+  transform:translate(-50%,-50%) scale(1);
   display:none;
-  background:white;
-  padding:15px;
+  background:transparent;
+  padding:0;
   border-radius:20px;
-  box-shadow:0 0 20px rgba(0,0,0,0.5);
   text-align:center;
-  color:black;
-  max-width:90%;
+  z-index:12; 
+  transition: transform 1s, filter 1s;
 }
-
 #photoBox img{
   width:100%;
   max-width:260px;
   border-radius:15px;
+  display:block;
+  margin:auto;
 }
-
+/* IMAGE OVERLAY FOR DIM */
+#imgOverlay{
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0, 0, 0, 0); /* initially transparent */
+  border-radius:15px;
+  pointer-events:none;
+  transition: background 1s;
+}
+/* ROMANTIC MESSAGES */
+#romanticMsg{
+  position:fixed;
+  top:10%;
+  width:100%;
+  text-align:center;
+  font-size:30px;
+  color:#ffffff;
+  z-index:13;
+}
+/* FULLSCREEN BACKGROUND WHEN MESSAGES APPEAR */
+#msgBackground{
+  display:none;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:#000000e7;
+  z-index:11; 
+}
+/* CONFETTI CANVAS */
+#confettiCanvas{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+  z-index:10;
+}
 /* MOBILE BUTTON ADJUSTMENTS */
 @media (max-width: 480px) {
   button{
@@ -92,7 +126,6 @@ button{
 }
 </style>
 </head>
-
 <body>
 
 <!-- PAGE 1 -->
@@ -112,8 +145,17 @@ button{
 <!-- PHOTO POPUP -->
 <div id="photoBox">
   <img src="cop.jpg" alt="Our Love">
-  <p>I Love You Mge Mnike 💗</p>
+  <div id="imgOverlay"></div>
 </div>
+
+<!-- BACKGROUND FOR MESSAGES -->
+<div id="msgBackground"></div>
+
+<!-- ROMANTIC MESSAGES -->
+<div id="romanticMsg"></div>
+
+<!-- CONFETTI CANVAS -->
+<canvas id="confettiCanvas"></canvas>
 
 <!-- AUDIO -->
 <audio id="loveSong" loop>
@@ -126,79 +168,128 @@ button{
 const page1 = document.getElementById("page1");
 const page2 = document.getElementById("page2");
 const loveSong = document.getElementById("loveSong");
-
 const yes1 = document.getElementById("yes1");
 yes1.onclick = () => {
   page1.style.display = "none";
   page2.style.display = "block";
-  loveSong.play().catch(() => {
-    console.log("Audio autoplay blocked.");
-  });
+  loveSong.play().catch(()=>console.log("Audio autoplay blocked."));
 };
 
 /* PAGE 1 NO BUTTON SCALE + MESSAGES */
 const no1 = document.getElementById("no1");
 let scale = 1;
-const msgs = [
-  "Are you sure? 😢",
-  "Think again 💕",
-  "Please say YES 🥺",
-  "You know you want to 😘",
-  "Say YES please ❤️"
-];
-no1.onclick = () => {
-  scale += 0.2;
-  yes1.style.transform = `scale(${scale})`;
+const msgs = ["Are you sure? 😢","Think again 💕","Please say YES 🥺","You know you want to 😘","Say YES please ❤️"];
+no1.onclick = ()=>{
+  scale +=0.2;
+  yes1.style.transform=`scale(${scale})`;
   no1.innerText = msgs[Math.floor(Math.random()*msgs.length)];
 };
 
 /* PAGE 2 NO BUTTON DODGE */
 const no2 = document.getElementById("no2");
-no2.addEventListener("mouseover", () => {
-  no2.style.position = "absolute";
-  const x = Math.random() * (window.innerWidth - no2.offsetWidth);
-  const y = Math.random() * (window.innerHeight - no2.offsetHeight);
-  no2.style.left = x + "px";
-  no2.style.top = y + "px";
+no2.addEventListener("mouseover",()=>{
+  no2.style.position="absolute";
+  const x=Math.random()*(window.innerWidth-no2.offsetWidth);
+  const y=Math.random()*(window.innerHeight-no2.offsetHeight);
+  no2.style.left=x+"px";
+  no2.style.top=y+"px";
 });
 
-/* PAGE 2 YES SHOW PHOTO AND HEART EXPLOSION */
+/* PAGE 2 YES SHOW PHOTO, HEARTS, CONFETTI, MESSAGES */
 const yes2 = document.getElementById("yes2");
 const photoBox = document.getElementById("photoBox");
+const imgOverlay = document.getElementById("imgOverlay");
+const romanticMsg = document.getElementById("romanticMsg");
+const msgBackground = document.getElementById("msgBackground");
+
 yes2.onclick = () => {
   heartExplosion();
   photoBox.style.display = "block";
+  msgBackground.style.display = "block"; // background behind messages
+  launchConfetti();
+  showMessages();
+
+  // DIM IMAGE AND SCALE UP
+  imgOverlay.style.background = "rgba(0,0,0,0.3)";
+  photoBox.style.transform = "translate(-50%,-50%) scale(1.15)";
 };
 
 /* FLOATING HEARTS */
 function createHeart(x,y){
   const heart = document.createElement("div");
-  heart.className = "heart";
-  heart.innerHTML = "❤";
+  heart.className="heart";
+  heart.innerHTML="❤";
   heart.style.left = x + "px";
   heart.style.top = y + "px";
-  heart.style.fontSize = (Math.random()*10+15) + "px";
+  heart.style.fontSize=(Math.random()*10+15)+"px";
   document.body.appendChild(heart);
   setTimeout(()=>heart.remove(),1000);
 }
-document.addEventListener("mousemove", e => createHeart(e.clientX, e.clientY));
-document.addEventListener("touchmove", e => {
-  for(let t of e.touches) createHeart(t.clientX, t.clientY);
+document.addEventListener("mousemove", e=>createHeart(e.clientX,e.clientY));
+document.addEventListener("touchmove", e=>{
+  for(let t of e.touches) createHeart(t.clientX,t.clientY);
 });
 
 /* HEART EXPLOSION */
 function heartExplosion(){
   for(let i=0;i<70;i++){
-    const heart = document.createElement("div");
-    heart.className = "heart";
-    heart.innerHTML = "❤";
-    heart.style.left = Math.random()*window.innerWidth+"px";
-    heart.style.top = Math.random()*window.innerHeight+"px";
+    const heart=document.createElement("div");
+    heart.className="heart";
+    heart.innerHTML="❤";
+    heart.style.left=Math.random()*window.innerWidth+"px";
+    heart.style.top=Math.random()*window.innerHeight+"px";
     document.body.appendChild(heart);
     setTimeout(()=>heart.remove(),1000);
   }
 }
-</script>
 
+/* CONFETTI ANIMATION */
+function launchConfetti(){
+  const canvas=document.getElementById("confettiCanvas");
+  const ctx=canvas.getContext("2d");
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+  let confetti=[];
+  for(let i=0;i<150;i++){
+    confetti.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*6+4,d:Math.random()*50+10,color:`hsl(${Math.random()*360},100%,50%)`,tilt:Math.random()*10-10,tiltAngleIncrement:Math.random()*0.07+0.05,tiltAngle:0});
+  }
+  let angle=0;
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    confetti.forEach(c=>{
+      c.tiltAngle+=c.tiltAngleIncrement;
+      c.y+=(Math.cos(angle+c.d)+1+c.r/2)/2;
+      c.tilt=Math.sin(c.tiltAngle)*15;
+      ctx.beginPath();
+      ctx.lineWidth=c.r;
+      ctx.strokeStyle=c.color;
+      ctx.moveTo(c.x+c.tilt+c.r/2,c.y);
+      ctx.lineTo(c.x+c.tilt,c.y+c.tilt+c.r/2);
+      ctx.stroke();
+    });
+    angle+=0.01;
+    requestAnimationFrame(draw);
+  }
+  draw();
+  setTimeout(()=>ctx.clearRect(0,0,canvas.width,canvas.height),5000);
+}
+
+/* ROMANTIC TEXT MESSAGES */
+function showMessages(){
+  const msgs=["මැණික තමා මගේ මුළු ලෝකෙම  ❤️","මැණිකේ, ඔයා නැතුව ජීවිතේ ගැන මට හිතාගන්න බෑ. 💕","මැණික එක්ක ඉන්න සෑම මොහොතක් ම  මට හරිම සුන්දර මොහොතක්  ✨","මම මගේ මැණිකට පණ වගේ ආදරෙයි  💖"];
+  romanticMsg.innerHTML="";
+  let i=0;
+  const interval=setInterval(()=>{
+    if(i>=msgs.length){clearInterval(interval); return;}
+    const p=document.createElement("p");
+    p.innerText=msgs[i];
+    p.style.opacity=0;
+    p.style.transition="opacity 1s";
+    romanticMsg.appendChild(p);
+    setTimeout(()=>p.style.opacity=1,10);
+    i++;
+  },1500);
+}
+</script>
 </body>
 </html>
