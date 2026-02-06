@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Valentine 💖</title>
 
 <style>
@@ -17,6 +18,9 @@ body{
   background-size:600% 600%;
   animation:bgMove 10s infinite;
   color:white;
+  text-align:center;
+  flex-direction:column;
+  padding:10px;
 }
 
 @keyframes bgMove{
@@ -25,16 +29,17 @@ body{
   100%{background-position:0% 50%;}
 }
 
-.page{text-align:center;}
+.page{width:100%; max-width:500px; margin:auto;}
 
 button{
-  padding:14px 28px;
-  font-size:18px;
+  padding:12px 24px;
+  font-size:16px;
   border:none;
   border-radius:12px;
   cursor:pointer;
   margin:10px;
   transition:0.3s;
+  min-width:120px;
 }
 
 .yes{background:#ff2e63;color:white;}
@@ -68,11 +73,22 @@ button{
   box-shadow:0 0 20px rgba(0,0,0,0.5);
   text-align:center;
   color:black;
+  max-width:90%;
 }
 
 #photoBox img{
-  width:260px;
+  width:100%;
+  max-width:260px;
   border-radius:15px;
+}
+
+/* MOBILE BUTTON ADJUSTMENTS */
+@media (max-width: 480px) {
+  button{
+    font-size:14px;
+    padding:10px 20px;
+    min-width:100px;
+  }
 }
 </style>
 </head>
@@ -90,7 +106,7 @@ button{
 <div id="page2" class="page">
   <h1>How Much Do You Love Me? ❤️</h1>
   <button id="yes2" class="yes">SO MUCH 💞</button>
-  <button id="no2" class="no"> Little😅</button>
+  <button id="no2" class="no">Little 😅</button>
 </div>
 
 <!-- PHOTO POPUP -->
@@ -99,80 +115,85 @@ button{
   <p>I Love You Mge Mnike 💗</p>
 </div>
 
+<!-- AUDIO -->
+<audio id="loveSong" loop>
+  <source src="romantic-song.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
+
 <script>
-/* PAGE SWITCH */
-const page1=document.getElementById("page1");
-const page2=document.getElementById("page2");
-document.getElementById("yes1").onclick=()=>{
-  page1.style.display="none";
-  page2.style.display="block";
+/* PAGE SWITCH AND MUSIC PLAY */
+const page1 = document.getElementById("page1");
+const page2 = document.getElementById("page2");
+const loveSong = document.getElementById("loveSong");
+
+const yes1 = document.getElementById("yes1");
+yes1.onclick = () => {
+  page1.style.display = "none";
+  page2.style.display = "block";
+  loveSong.play().catch(() => {
+    console.log("Audio autoplay blocked.");
+  });
 };
 
-/* PAGE 1 NO BUTTON BEHAVIOR */
-const no1=document.getElementById("no1");
-const yes1=document.getElementById("yes1");
-let scale=1;
-const msgs=[
+/* PAGE 1 NO BUTTON SCALE + MESSAGES */
+const no1 = document.getElementById("no1");
+let scale = 1;
+const msgs = [
   "Are you sure? 😢",
   "Think again 💕",
   "Please say YES 🥺",
   "You know you want to 😘",
   "Say YES please ❤️"
 ];
-
-no1.onclick=()=>{
-  scale+=0.2;
-  yes1.style.transform=`scale(${scale})`;
-  no1.innerText=msgs[Math.floor(Math.random()*msgs.length)];
+no1.onclick = () => {
+  scale += 0.2;
+  yes1.style.transform = `scale(${scale})`;
+  no1.innerText = msgs[Math.floor(Math.random()*msgs.length)];
 };
 
-/* PAGE 2 NO BUTTON RUN */
-const no2=document.getElementById("no2");
-no2.addEventListener("mouseover",()=>{
-  no2.style.position="absolute";
-  const x=Math.random()*(window.innerWidth-no2.offsetWidth);
-  const y=Math.random()*(window.innerHeight-no2.offsetHeight);
-  no2.style.left=x+"px";
-  no2.style.top=y+"px";
+/* PAGE 2 NO BUTTON DODGE */
+const no2 = document.getElementById("no2");
+no2.addEventListener("mouseover", () => {
+  no2.style.position = "absolute";
+  const x = Math.random() * (window.innerWidth - no2.offsetWidth);
+  const y = Math.random() * (window.innerHeight - no2.offsetHeight);
+  no2.style.left = x + "px";
+  no2.style.top = y + "px";
 });
 
-/* PAGE 2 YES SHOW PHOTO */
-const yes2=document.getElementById("yes2");
-const photoBox=document.getElementById("photoBox");
-
-yes2.onclick=()=>{
+/* PAGE 2 YES SHOW PHOTO AND HEART EXPLOSION */
+const yes2 = document.getElementById("yes2");
+const photoBox = document.getElementById("photoBox");
+yes2.onclick = () => {
   heartExplosion();
-  photoBox.style.display="block";
+  photoBox.style.display = "block";
 };
-// Floating hearts on mouse move
-document.addEventListener("mousemove", function(e) {
-    const heart = document.createElement("div");
-    heart.className = "heart";
-    heart.innerHTML = "❤"; // You can also use 💕 for variation
 
-    // Position the heart at cursor
-    heart.style.left = e.clientX + "px";
-    heart.style.top = e.clientY + "px";
-
-    // Random size for more dynamic effect
-    const size = Math.random() * 10 + 15; // 15px to 25px
-    heart.style.fontSize = size + "px";
-
-    // Append to body
-    document.body.appendChild(heart);
-
-    // Remove heart after animation (1s)
-    setTimeout(() => heart.remove(), 1000);
+/* FLOATING HEARTS */
+function createHeart(x,y){
+  const heart = document.createElement("div");
+  heart.className = "heart";
+  heart.innerHTML = "❤";
+  heart.style.left = x + "px";
+  heart.style.top = y + "px";
+  heart.style.fontSize = (Math.random()*10+15) + "px";
+  document.body.appendChild(heart);
+  setTimeout(()=>heart.remove(),1000);
+}
+document.addEventListener("mousemove", e => createHeart(e.clientX, e.clientY));
+document.addEventListener("touchmove", e => {
+  for(let t of e.touches) createHeart(t.clientX, t.clientY);
 });
 
 /* HEART EXPLOSION */
 function heartExplosion(){
   for(let i=0;i<70;i++){
-    const heart=document.createElement("div");
-    heart.className="heart";
-    heart.innerHTML="❤";
-    heart.style.left=Math.random()*window.innerWidth+"px";
-    heart.style.top=Math.random()*window.innerHeight+"px";
+    const heart = document.createElement("div");
+    heart.className = "heart";
+    heart.innerHTML = "❤";
+    heart.style.left = Math.random()*window.innerWidth+"px";
+    heart.style.top = Math.random()*window.innerHeight+"px";
     document.body.appendChild(heart);
     setTimeout(()=>heart.remove(),1000);
   }
