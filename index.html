@@ -295,9 +295,44 @@
       #photoGallery { grid-template-columns: repeat(2, 1fr); }
       #photoGallery img { height: 110px; }
     }
+     /* Mobile music button */
+    #musicToggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      backdrop-filter: blur(5px);
+      border: 2px solid white;
+      color: white;
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 100;
+      transition: 0.3s;
+      box-shadow: 0 0 20px hotpink;
+    }
+    #musicToggle.playing {
+      background: rgba(255,77,109,0.8);
+    }
+    
+    .music-note {
+      animation: spin 3s linear infinite;
+    }
+    
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
+  
+   <div id="musicToggle" class="playing">🎵</div>
 
   <!-- PAGES -->
   <div id="page1" class="page">
@@ -342,28 +377,86 @@
       const msgBackground = document.getElementById("msgBackground");
       const finalBtn = document.getElementById("finalBtn");
       const photoGallery = document.getElementById("photoGallery");
+      const musicToggle = document.getElementById("musicToggle");
 
-	function forcePlayMusic() {
-        loveSong.play().catch(e => {
-          console.log("Autoplay blocked – waiting for user interaction");
-          // Some browsers block autoplay; we'll play on first click/touch anywhere
+	let musicPlaying = false;
+      
+      // ===== MOBILE-FRIENDLY MUSIC CONTROL =====
+      function initMusic() {
+        // First, try to load the audio
+        loveSong.load();
+        
+        // Set up music toggle button
+        musicToggle.addEventListener('click', function(e) {
+          e.stopPropagation();
+          if (musicPlaying) {
+            loveSong.pause();
+            musicToggle.classList.remove('playing');
+            musicToggle.innerHTML = '🎵';
+          } else {
+            // Play music - MUST be in user interaction for mobile
+            loveSong.play()
+              .then(() => {
+                musicPlaying = true;
+                musicToggle.classList.add('playing');
+                musicToggle.innerHTML = '🎶';
+                console.log('Music started');
+              })
+              .catch(err => {
+                console.log('Music failed:', err);
+                alert('Tap anywhere to start music 💕');
+              });
+          }
+          musicPlaying = !musicPlaying;
+        });
+        
+        // Also try to play on ANY user interaction (first tap)
+        const firstTap = function() {
+          if (!musicPlaying) {
+            loveSong.play()
+              .then(() => {
+                musicPlaying = true;
+                musicToggle.classList.add('playing');
+                musicToggle.innerHTML = '🎶';
+                console.log('Music started via first tap');
+              })
+              .catch(() => {});
+          }
+          document.removeEventListener('touchstart', firstTap);
+          document.removeEventListener('click', firstTap);
+        };
+        
+        document.addEventListener('touchstart', firstTap);
+        document.addEventListener('click', firstTap);
+        
+        // Handle page visibility (if user switches tabs)
+        document.addEventListener('visibilitychange', function() {
+          if (!document.hidden && musicPlaying) {
+            loveSong.play().catch(() => {});
+          }
         });
       }
-	 forcePlayMusic();
-	const playOnFirstTouch = function() {
-        loveSong.play().catch(() => {});
-        document.removeEventListener('click', playOnFirstTouch);
-        document.removeEventListener('touchstart', playOnFirstTouch);
-      };
-      document.addEventListener('click', playOnFirstTouch);
-      document.addEventListener('touchstart', playOnFirstTouch);
+      
+      // Call init
+      initMusic();
 
-      // 🎵 TRY TO PLAY MUSIC (autoplay may be blocked, but we try)
+      // YES button page1
       yes1.onclick = () => {
         page1.style.display = "none";
         page2.style.display = "block";
-               createHeartExplosion(20); // mini wow
+        createHeartExplosion(20);
+        // Ensure music plays
+        if (!musicPlaying) {
+          loveSong.play()
+            .then(() => {
+              musicPlaying = true;
+              musicToggle.classList.add('playing');
+              musicToggle.innerHTML = '🎶';
+            })
+            .catch(() => {});
+        }
       };
+
 
       // PAGE 1 NO BUTTON - playful scale + text
       let scale = 1;
